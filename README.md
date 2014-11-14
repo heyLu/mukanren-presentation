@@ -9,3 +9,6 @@
     - [part 1](https://www.youtube.com/watch?v=zHov3fKYqBA): miniKanren intro
     - [part 2](https://www.youtube.com/watch?v=nFE2E91VDAk): a scheme interpreter (and quines)
 * The Reasoned Schemer
+* Petite Chez Scheme
+* [miniKanren implementation](https://github.com/miniKanren/miniKanren),
+    use `(load "<path-to-dir>/mk.scm")` to load it in petite
