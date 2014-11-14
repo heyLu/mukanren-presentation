@@ -12,3 +12,4 @@
 * Petite Chez Scheme
 * [miniKanren implementation](https://github.com/miniKanren/miniKanren),
     use `(load "<path-to-dir>/mk.scm")` to load it in petite
+* <http://minikanren.org>
