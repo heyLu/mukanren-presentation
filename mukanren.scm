@@ -133,7 +133,7 @@
   (lambda (s/c)
     (bind (g1 s/c) g2)))
 
-;; finite depth-first search
+;; 4.1. finite depth-first search
 
 ; concatenates the states in $1 and $2
 (define (mplus $1 $2)
@@ -166,3 +166,191 @@
 ;                              (disj (conj (=== a 1) (=== b 2))
 ;                                    (conj (=== a 2) (=== b 1)))))))
 ;  empty-state)
+
+; (define (fives x) (disj (=== x 5) (fives x)))
+; eat-all-memory:
+; ((call/fresh fives) empty-state)
+
+;; 4.2. infinite streams
+
+(define (mplus $1 $2)
+  (cond
+   ((null? $1) $2)
+   ((procedure? $1) (lambda () (mplus ($1) $2)))
+   (else (cons (car $1) (mplus (cdr $1) $2)))))
+
+(define (bind $ g)
+  (cond
+   ((null? $) mzero)
+   ((procedure? $) (lambda () (bind ($) g)))
+   (else (mplus (g (car $)) (bind (cdr $) g)))))
+
+(define (fives x)
+  (disj (=== x 5)
+        ; construct a "lazy" goal, e.g. a goal returning an "immature stream"
+        (lambda (s/c)
+          (lambda () ((fives x) s/c)))))
+
+; ((call/fresh fives) empty-state)
+; => ((((#(0) . 5)) . 1) . #<procedure>)
+; ((call/fresh (lambda (x) (=== x x))) empty-state)
+; => ((() . 1))
+; ((call/fresh (lambda (x) (call/fresh (lambda (y) (=== x y))))) empty-state)
+; => ((((#(0) . #(1))) . 2))
+; ((call/fresh (lambda (x) (call/fresh (lambda (y) (conj (=== x y) (=== y x)))))) empty-state)
+; => ((((#(0) . #(1))) . 2))
+
+;; 4.3. interleaving streams
+
+(define (sixes x)
+  (disj (=== x 6)
+        (lambda (s/c) (lambda () ((sixes x) s/c)))))
+(define fives-and-sixes
+  (call/fresh (lambda (x) (disj (fives x) (sixes x)))))
+
+(define (mplus $1 $2)
+  (cond
+   ((null? $1) $2)
+   ((procedure? $1) (lambda () (mplus $2 ($1))))
+   (else (cons (car $1) (mplus (cdr $1) $2)))))
+
+(define (sevens x)
+  (disj (=== x 7)
+        (lambda (s/c) (lambda () ((sevens x) s/c)))))
+(define fives-sixes-and-sevens
+  (call/fresh (lambda (x)
+                (disj (fives x)
+                      (disj (sixes x)
+                            (sevens x))))))
+
+;; 5. user-level functionality
+
+;; 5.1. recovering miniKanren's control operators
+
+; macro for η-delay
+(define-syntax Zzz
+  (syntax-rules ()
+    ((_ g) (lambda (s/c) (lambda () (g s/c))))))
+
+(define-syntax conj+
+  (syntax-rules ()
+    ((_ g) (Zzz g))
+    ((_ g0 g ...) (conj (Zzz g0) (conj+ g ...)))))
+
+(define-syntax disj+
+  (syntax-rules ()
+    ((_ g) g)
+    ((_ g0 g ...) (disj (Zzz g0) (disj+ g ...)))))
+
+; ((call/fresh (lambda (x) (disj+ (fives x) (sixes x) (sevens x)))) empty-state)
+
+(define-syntax conde
+  (syntax-rules ()
+    ((_ (g0 g ...) ...) (disj+ (conj+ g0 g ...) ...))))
+
+(define-syntax fresh
+  (syntax-rules ()
+    ; (fresh () ...)
+    ((_ () g0 g ...) (conj+ g0 g ...))
+    ((_ (x0 x ...) g0 g ...)
+     (call/fresh (lambda (x0)
+                   (fresh (x ...)
+                          g0 g ...))))))
+
+;; 5.2. from streams to lists
+
+(define (pull $)
+  (if (procedure? $)
+      (pull ($))
+      $))
+
+(define (take-all $)
+  (let (($ (pull $)))
+    (cond
+     ((null? $) '())
+     (else (cons (car $) (take-all (cdr $)))))))
+
+(define (take n $)
+  (if (zero? n)
+      '()
+      (let (($ (pull $)))
+        (cond
+         ((null? $) '())
+         (else (cons (car $) (take (- n 1) (cdr $))))))))
+
+;; 5.3. recovering reification
+
+(define (mK-reify s/c*)
+  (map reify-state/1st-var s/c*))
+
+(define (reify-state/1st-var s/c)
+  (let ((v (walk* (var 0) (car s/c))))
+    (walk* v (reify-s v '()))))
+
+(define (reify-s v s)
+  (let ((v (walk v s)))
+    (cond
+     ((var? v)
+      (let ((n (reify-name (length s))))
+        (cons `(,v . ,n) s)))
+     ((pair? v) (reify-s (cdr v) (reify-s (car v) s)))
+     (else s))))
+
+(define (reify-name n)
+  (string->symbol
+   (string-append "_" "." (number->string n))))
+
+(define (walk* v s)
+  (let ((v (walk v s)))
+    (cond
+     ((var? v) v)
+     ((pair? v) (cons (walk* (car v) s)
+                      (walk* (cdr v) s)))
+     (else v))))
+
+;; 5.4. recovering the interface to scheme
+
+(define empty-state '(() . 0))
+(define (call/empty-state g) (g empty-state))
+
+(define-syntax run
+  (syntax-rules ()
+    ; for example `(run 3 (x) (=== x 5))`
+    ((_ n (x ...) g0 g ...)
+     (mK-reify (take n (call/empty-state
+                        (fresh (x ...) g0 g ...)))))))
+
+(define-syntax run*
+  (syntax-rules ()
+    ((_ (x ...) g0 g ...)
+     (mK-reify (take-all (call/empty-state
+                          (fresh (x ...) g0 g ...)))))))
+
+;; example: peano numbers
+
+; Z = 0, (S x) = x + 1
+; (S (S (S Z))) = 3
+
+(define (peano^o x)
+  (conde
+   ((=== x 'Z))
+   ((fresh (y)
+           (=== x `(S ,y))
+           (peano^o y)))))
+
+; (run 5 (res) (peano^o res))
+; => (Z (S Z) (S (S Z)) (S (S (S Z))) (S (S (S (S Z)))))
+
+; https://www.youtube.com/watch?v=7kPMFkNm2dw
+(define (plus^o x y z)
+  (conde
+   ((=== x 'Z) (=== y z))
+   ((fresh (sx sz)
+           (=== x `(S ,sx))
+           (=== z `(S ,sz))
+           (plus^o sx y sz)))))
+
+; (run* (res x y) (plus^o x y '(S (S Z))) (=== res (list x y)))
+; => ((Z (S (S Z)))
+;     ((S Z) (S Z))
+;     ((S (S Z)) Z))
