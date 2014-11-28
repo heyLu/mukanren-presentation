@@ -1,7 +1,7 @@
 ; mu-kanren
 
 (define (print x)
-  (format #t "~A\n" x))
+  (format #t "; ~A\n" x))
 
 ;;
 
@@ -340,11 +340,17 @@
 
 ; (run 5 (res) (peano^o res))
 ; => (Z (S Z) (S (S Z)) (S (S (S Z))) (S (S (S (S Z)))))
+; (run* (q) (peano^o '(S (S Z))))
+; => (_.0)
+; (run* (q) (peano^o '(S (S oops))))
+; => ()
 
 ; https://www.youtube.com/watch?v=7kPMFkNm2dw
 (define (plus^o x y z)
   (conde
+   ; Z + y = z
    ((=== x 'Z) (=== y z))
+   ; (S x) + y = (S (x + y))
    ((fresh (sx sz)
            (=== x `(S ,sx))
            (=== z `(S ,sz))
