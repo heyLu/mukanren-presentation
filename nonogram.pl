@@ -250,3 +250,6 @@ nonogramSolve(R, C, F) :- time(nonogramGen(R, C, F)), printNonogram(F).
 
 % correct. (from http://en.japonskie.ru/crossword/chashechka2)
 %   nonogramSolve([[8],[10],[1,8],[8],[4]],[[2],[1,1],[4],[4],[5],[5],[5],[5],[4],[3]], F).
+
+% incorrect. (from http://en.japonskie.ru/crossword/infogram)
+%   nonogramSolve([[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]], F).
