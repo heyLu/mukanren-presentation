@@ -223,6 +223,8 @@ printRow([_ | T]) :- write('¿'), write(' '), printRow(T).
 printNonogram([]).
 printNonogram([H | T]) :- printRow(H), printNonogram(T).
 
+nonogramSolve(R, C, F) :- time(nonogramGen(R, C, F)), printNonogram(F).
+
 nonogram1Gen(F) :-
     nonogramGen([[2], [2, 1], [4], [1], [3]],
                 [[2], [3, 1], [1, 1], [3], [2]],
@@ -237,8 +239,6 @@ nonogram3Gen(F) :-
     nonogramGen([[7],[1,1],[1,1,1,1],[1,1],[1,3,1],[1,1],[7]],
                 [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]],
                 F).
-
-nonogramSolve(R, C, F) :- time(nonogramGen(R, C, F)), printNonogram(F).
 
 % list of simple nonograms sorted by increasing size: http://en.japonskie.ru/index.php?kind=1&resh=2&slev=1&lev=1&k_name=&notr=0&list=0&sort=1&sort_asc=1
 
