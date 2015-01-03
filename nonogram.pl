@@ -186,6 +186,8 @@ nonogram3(X11, X12, X13, X14, X15,
     constrain([2], C1), constrain([3,1], C2), constrain([1,1], C3), constrain([3], C4), constrain([2], C5)
 .
 
+%nonogram(X11, X12, X13, X14, X15, X21, X22, X23, X24, X25, X31, X32, X33, X34, X35, X41, X42, X43, X44, X45, X51, X52, X53, X54, X55).
+
 rows(S, E, _, []) :- S >= E.
 rows(S, E, F, R) :- S < E, row(S, F, R1), R = [R1 | RR], S1 is S + 1, rows(S1, E, F, RR).
 
@@ -236,4 +238,8 @@ nonogram3Gen(F) :-
                 [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]],
                 F).
 
-%nonogram(X11, X12, X13, X14, X15, X21, X22, X23, X24, X25, X31, X32, X33, X34, X35, X41, X42, X43, X44, X45, X51, X52, X53, X54, X55).
+% correct. (from http://de.wikipedia.org/wiki/Nonogramm#Beispiel)
+%   nonogramGen([[0],[4],[6],[2,2],[2,2],[6],[4],[2],[2],[2],[0]],[[0],[9],[9],[2,2],[2,2],[4],[4],[0]],F), write(F).
+
+% doesn't finish. (from http://en.japonskie.ru/crossword/vopros1)
+%   nonogramGen([[7],[2,4],[2,3],[4,4],[5,4],[5,4],[5,4],[3,4],[4],[3],[3],[2],[1],[1],[],[3],[5],[5],[5],[3]],[[4],[6],[7],[2,5,3],[1,3,5],[1,3,5],[1,2,5],[2,3,3],[11],[10],[8],[5]],F), write(F).
