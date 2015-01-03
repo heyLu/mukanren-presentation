@@ -253,3 +253,6 @@ nonogram3Gen(F) :-
 
 % incorrect. (from http://en.japonskie.ru/crossword/infogram)
 %   nonogramSolve([[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]], F).
+
+% incorrect. (from http://www.janko.at/Raetsel/Nonogramme/221.a.htm)
+%   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
