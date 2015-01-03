@@ -238,6 +238,8 @@ nonogram3Gen(F) :-
                 [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]],
                 F).
 
+nonogramSolve(R, C, F) :- time(nonogramGen(R, C, F)), printNonogram(F).
+
 % correct. (from http://de.wikipedia.org/wiki/Nonogramm#Beispiel)
 %   nonogramGen([[0],[4],[6],[2,2],[2,2],[6],[4],[2],[2],[2],[0]],[[0],[9],[9],[2,2],[2,2],[4],[4],[0]],F), write(F).
 
