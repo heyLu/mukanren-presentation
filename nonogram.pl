@@ -240,8 +240,13 @@ nonogram3Gen(F) :-
 
 nonogramSolve(R, C, F) :- time(nonogramGen(R, C, F)), printNonogram(F).
 
+% list of simple nonograms sorted by increasing size: http://en.japonskie.ru/index.php?kind=1&resh=2&slev=1&lev=1&k_name=&notr=0&list=0&sort=1&sort_asc=1
+
 % correct. (from http://de.wikipedia.org/wiki/Nonogramm#Beispiel)
 %   nonogramGen([[0],[4],[6],[2,2],[2,2],[6],[4],[2],[2],[2],[0]],[[0],[9],[9],[2,2],[2,2],[4],[4],[0]],F), write(F).
 
 % doesn't finish. (from http://en.japonskie.ru/crossword/vopros1)
 %   nonogramGen([[7],[2,4],[2,3],[4,4],[5,4],[5,4],[5,4],[3,4],[4],[3],[3],[2],[1],[1],[],[3],[5],[5],[5],[3]],[[4],[6],[7],[2,5,3],[1,3,5],[1,3,5],[1,2,5],[2,3,3],[11],[10],[8],[5]],F), write(F).
+
+% correct. (from http://en.japonskie.ru/crossword/chashechka2)
+%   nonogramSolve([[8],[10],[1,8],[8],[4]],[[2],[1,1],[4],[4],[5],[5],[5],[5],[4],[3]], F).
