@@ -213,7 +213,7 @@ nonogramGen(RowHints, ColHints, F) :-
     maplist(applyConstrain, ColsWithHints)
 .
 
-printRow([]) :- nl, false.
+printRow([]) :- nl, true.
 printRow([black | T]) :- write('◼'), write(' '), printRow(T).
 printRow([white | T]) :- write('◻'), write(' '), printRow(T).
 printRow([_ | T]) :- write('¿'), write(' '), printRow(T).
