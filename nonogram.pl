@@ -1,7 +1,10 @@
-% field(RowHints, ColHints, Field) :- ???
+%% nonogram solver, for 'Praktikum Wissensrepräsentation'
+%%
+%% Eugen Rein, Jakob Matthes, Lucas Stadler
 
-%field([], [], F) :- F.
-%field([R | T], ColHints, F) :- append(F, row(ColHints, Row)
+
+%% field construction
+
 
 mkRow([], []).
 mkRow([_ | T], [_ | RowRest]) :- mkRow(T, RowRest).
@@ -10,46 +13,9 @@ mkRow([_ | T], [_ | RowRest]) :- mkRow(T, RowRest).
 field([], _, []).
 field([_ | T], ColHints, [Row | FieldRest]) :- mkRow(ColHints, Row), field(T, ColHints, FieldRest).
 
-%row([], R) :- R.
-%row([H | T], R) :- append(_
 
-%f1 :- [[X11, X12, X13, X14, X15],
-%       [X21, X22, X23, X24, X25],
-%       [X31, X32, X33, X34, X35],
-%       [X41, X42, X43, X44, X45],
-%       [X51, X52, X53, X54, X55]].
+%% field access
 
-% a cell can be either white or black
-cell(white). cell(black).
-
-white(white).
-black(black).
-
-% generate all possible assignments for the given list of cells
-cells([]).
-cells([H | T]) :- cell(H), cells(T).
-
-% count the number of black cells in the list
-numBlacks([], 0).
-numBlacks([white | T], N) :- numBlacks(T, N).
-numBlacks([black | T], N) :- numBlacks(T, N1), N is N1 + 1.
-
-% color the n first elements of the first list black, the second list are the remaining elements
-blacks(0, L, L).
-blacks(N, [H | T], R) :- black(H), N1 is N - 1, blacks(N1, T, R).
-
-% constrain generates all valid assignments given a hint and a corresponding line
-%constrain(N, Row) :- N = numBlacks(Row).
-constrain([], _).
-constrain([0], []).
-constrain([0], [H | T]) :- white(H), constrain([0], T).
-%constrain([N], [H | T]) :- \+ N = 0, N1 is N - 1, black(H), constrain([N1], T).
-constrain([N], L) :- \+ N = 0, blacks(N, L, R), constrain([0], R).
-constrain([N], [H | T]) :- \+ N = 0, white(H), constrain([N], T).
-constrain([0| Y], [H | T]) :- white(H), print(' rule 6 '), constrain(Y, T).
-%constrain([X, Y], [H | T]) :- \+ X = 0, X1 is X - 1, black(H), constrain([X1, Y], T).
-constrain([X| Y], L) :- \+ X = 0, print(' rule 7 '), blacks(X, L, R), constrain([0 | Y], R).
-constrain([X| Y], [H | T]) :- \+ X = 0, print(' rule 8 '),white(H), constrain([X | Y], T).
 
 % get the nth row from a field
 row(0, [R | _], R).
@@ -62,6 +28,40 @@ nth(N, [_ | T], X) :- N1 is N - 1, nth(N1, T, X).
 % get the nth column from a field
 col(_, [], []).
 col(N, [H | T], [X | R]) :- nth(N, H, X), col(N, T, R).
+
+% get the rows from S to E from the field
+%
+%   % get all rows from a field
+%   ?- rows(0, NumRows, F, R)
+rows(S, E, _, []) :- S >= E.
+rows(S, E, F, [R1 | RR]) :- S < E, row(S, F, R1), S1 is S + 1, rows(S1, E, F, RR).
+
+% get the columns from S to E from the field
+cols(S, E, _, []) :- S >= E.
+cols(S, E, F, [C1 | CC]) :- S < E, col(S, F, C1), S1 is S + 1, cols(S1, E, F, CC).
+
+
+%% pretty printing
+
+
+printRow([]) :- nl, true.
+printRow([X | T]) :- var(X), write('¿'), write(' '), printRow(T).
+printRow([black | T]) :- write('◼'), write(' '), printRow(T).
+printRow([white | T]) :- write('◻'), write(' '), printRow(T).
+
+printNonogram([]).
+printNonogram([H | T]) :- printRow(H), printNonogram(T).
+
+
+%% helpers
+
+
+white(white).
+black(black).
+
+
+%% simple solving
+
 
 % assign the color C to the elements between S and E
 %   (P counts the "current" position, initialize with 0)
@@ -80,158 +80,39 @@ safeBlacks(Len, [N], L) :- Border is Len - N, Border < N, End is Len - Border, f
 safeBlacks(Len, [H, _ | _], L) :- safeBlacks(Len, [H], L).
 safeBlacks(_, _, _).
 
-nonogram1(X11, X12, X13, X14, X15,
-         X21, X22, X23, X24, X25,
-         X31, X32, X33, X34, X35,
-         X41, X42, X43, X44, X45,
-         X51, X52, X53, X54, X55) :-
-    cells([X11, X12, X13, X14, X15,
-           X21, X22, X23, X24, X25,
-           X31, X32, X33, X34, X35,
-           X41, X42, X43, X44, X45,
-           X51, X52, X53, X54, X55]),
-    F = [[X11, X12, X13, X14, X15],
-         [X21, X22, X23, X24, X25],
-         [X31, X32, X33, X34, X35],
-         [X41, X42, X43, X44, X45],
-         [X51, X52, X53, X54, X55]],
 
-    row(0, F, R1), constrain([2], R1),
-    row(1, F, R2), constrain([2,1], R2),
-    row(2, F, R3), constrain([4], R3),
-    row(3, F, R4), constrain([1], R4),
-    row(4, F, R5), constrain([3], R5),
+%% utilities
 
-    col(0, F, C1), constrain([2], C1),
-    col(1, F, C2), constrain([3,1], C2),
-    col(2, F, C3), constrain([1,1], C3),
-    col(3, F, C4), constrain([3], C4),
-    col(4, F, C5), constrain([2], C5)
-.
-
-nonogram1a(X11, X12, X13, X14, X15,
-         X21, X22, X23, X24, X25,
-         X31, X32, X33, X34, X35,
-         X41, X42, X43, X44, X45,
-         X51, X52, X53, X54, X55) :-
-    F = [[X11, X12, X13, X14, X15],
-         [X21, X22, X23, X24, X25],
-         [X31, X32, X33, X34, X35],
-         [X41, X42, X43, X44, X45],
-         [X51, X52, X53, X54, X55]],
-
-    row(0, F, R1), constrain([2], R1),
-    row(1, F, R2), constrain([2,1], R2),
-    row(2, F, R3), constrain([4], R3),
-    row(3, F, R4), constrain([1], R4),
-    row(4, F, R5), constrain([3], R5),
-
-    col(0, F, C1), constrain([2], C1),
-    col(1, F, C2), constrain([3,1], C2),
-    col(2, F, C3), constrain([1,1], C3),
-    col(3, F, C4), constrain([3], C4),
-    col(4, F, C5), constrain([2], C5)
-
-    %% cells([X11, X12, X13, X14, X15,
-    %%        X21, X22, X23, X24, X25,
-    %%        X31, X32, X33, X34, X35,
-    %%        X41, X42, X43, X44, X45,
-    %%        X51, X52, X53, X54, X55])
-.
-
-% this is slower than nonogram1!
-nonogram2(X11, X12, X13, X14, X15,
-         X21, X22, X23, X24, X25,
-         X31, X32, X33, X34, X35,
-         X41, X42, X43, X44, X45,
-         X51, X52, X53, X54, X55) :-
-    cells([X11, X12, X13, X14, X15,
-           X21, X22, X23, X24, X25,
-           X31, X32, X33, X34, X35,
-           X41, X42, X43, X44, X45,
-           X51, X52, X53, X54, X55]),
-    F = [[X11, X12, X13, X14, X15],
-         [X21, X22, X23, X24, X25],
-         [X31, X32, X33, X34, X35],
-         [X41, X42, X43, X44, X45],
-         [X51, X52, X53, X54, X55]],
-
-    col(1, F, C2), constrain([3,1], C2),
-    row(2, F, R3), constrain([4], R3),
-    row(1, F, R2), constrain([2,1], R2),
-    row(4, F, R5), constrain([3], R5),
-    col(3, F, C4), constrain([3], C4),
-    col(2, F, C3), constrain([1,1], C3),
-    row(0, F, R1), constrain([2], R1),
-    col(0, F, C1), constrain([2], C1),
-    col(4, F, C5), constrain([2], C5),
-    row(3, F, R4), constrain([1], R4)
-.
-
-nonogram3(X11, X12, X13, X14, X15,
-         X21, X22, X23, X24, X25,
-         X31, X32, X33, X34, X35,
-         X41, X42, X43, X44, X45,
-         X51, X52, X53, X54, X55) :-
-    F = [[X11, X12, X13, X14, X15],
-         [X21, X22, X23, X24, X25],
-         [X31, X32, X33, X34, X35],
-         [X41, X42, X43, X44, X45],
-         [X51, X52, X53, X54, X55]],
-    Len = 5,
-
-    row(0, F, R1), safeBlacks(Len, [2], R1),
-    row(1, F, R2), safeBlacks(Len, [2,1], R2),
-    row(2, F, R3), safeBlacks(Len, [4], R3),
-    row(3, F, R4), safeBlacks(Len, [1], R4),
-    row(4, F, R5), safeBlacks(Len, [3], R5),
-
-    col(0, F, C1), safeBlacks(Len, [2], C1),
-    col(1, F, C2), safeBlacks(Len, [3,1], C2),
-    col(2, F, C3), safeBlacks(Len, [1,1], C3),
-    col(3, F, C4), safeBlacks(Len, [3], C4),
-    col(4, F, C5), safeBlacks(Len, [2], C5),
-
-    %% cells([X11, X12, X13, X14, X15,
-    %%        X21, X22, X23, X24, X25,
-    %%        X31, X32, X33, X34, X35,
-    %%        X41, X42, X43, X44, X45,
-    %%        X51, X52, X53, X54, X55]),
-
-    constrain([2], R1), constrain([2,1], R2), constrain([4], R3), constrain([1], R4), constrain([3], R5),
-    constrain([2], C1), constrain([3,1], C2), constrain([1,1], C3), constrain([3], C4), constrain([2], C5)
-.
-
-%nonogram(X11, X12, X13, X14, X15, X21, X22, X23, X24, X25, X31, X32, X33, X34, X35, X41, X42, X43, X44, X45, X51, X52, X53, X54, X55).
-
-% get the rows from S to E from the field
-%
-%   % get all rows from a field
-%   ?- rows(0, NumRows, F, R)
-rows(S, E, _, []) :- S >= E.
-rows(S, E, F, [R1 | RR]) :- S < E, row(S, F, R1), S1 is S + 1, rows(S1, E, F, RR).
-
-% get the columns from S to E from the field
-cols(S, E, _, []) :- S >= E.
-cols(S, E, F, [C1 | CC]) :- S < E, col(S, F, C1), S1 is S + 1, cols(S1, E, F, CC).
 
 % joins pairs from two lists (cf. zip in e.g. haskell)
 zip([], [], []).
 zip([H1 | T1], [H2 | T2], [[H1, H2] | RR]) :- zip(T1, T2, RR).
+
+
+%% helpers
+
+
+% groups hints with columns and rows
+groupHints(RowHints, ColHints, F, RowsWithHints, ColsWithHints) :-
+    length(RowHints, NumRows), length(ColHints, NumCols),
+    rows(0, NumRows, F, Rows), zip(RowHints, Rows, RowsWithHints),
+    cols(0, NumCols, F, Cols), zip(ColHints, Cols, ColsWithHints)
+.
 
 % helper functions to be usable on a list of hint/line pairs
 applySafeBlacks([Hints, L]) :- length(L, Len), safeBlacks(Len, Hints, L).
 %applyConstrain([Hints, L]) :- write(Hints), write(' '), write(L), nl, possibility(Hints, L).
 applyConstrain([Hints, L]) :- possibility(Hints, L).
 
+
+%% solvers
+
+
 % find a solution by constructing the field, finding "safe" black fields and
 %  guessing the remaining fields based on the constraints
-nonogramGen(RowHints, ColHints, F) :-
+nonogramGenHeuristic(RowHints, ColHints, F) :-
     field(RowHints, ColHints, F),
-    
-    length(RowHints, NumRows), length(ColHints, NumCols),
-    rows(0, NumRows, F, Rows), zip(RowHints, Rows, RowsWithHints),
-    cols(0, NumCols, F, Cols), zip(ColHints, Cols, ColsWithHints),
+    groupHints(RowHints, ColHints, F, RowsWithHints, ColsWithHints),
 
     maplist(applySafeBlacks, RowsWithHints),
     maplist(applySafeBlacks, ColsWithHints),
@@ -239,17 +120,6 @@ nonogramGen(RowHints, ColHints, F) :-
     maplist(applyConstrain, RowsWithHints),
     maplist(applyConstrain, ColsWithHints)
 .
-
-printRow([]) :- nl, true.
-printRow([X | T]) :- var(X), write('¿'), write(' '), printRow(T).
-printRow([black | T]) :- write('◼'), write(' '), printRow(T).
-printRow([white | T]) :- write('◻'), write(' '), printRow(T).
-
-printNonogram([]).
-printNonogram([H | T]) :- printRow(H), printNonogram(T).
-
-% convenience function to time the solution and print it
-nonogramSolve(R, C, F) :- time(nonogramGen(R, C, F)), printNonogram(F).
 
 nonogram1Gen(F) :-
     nonogramGen([[2], [2, 1], [4], [1], [3]],
@@ -305,9 +175,14 @@ possibility([N | RN], L) :- \+ RN = [], length(L, Len), minLength([N | RN], ML),
 possibility([N | RN], [H | T]) :- \+ RN = [], length([H | T], Len), minLength([N | RN], ML), Len > ML, white(H), possibility([N | RN], T).
 
 % given a constraint and a line, calculates a list of all possibilities
+%
+%   ?- length(L, 5), possibilities([1,1], L, PS), printNonogram(PS).
 possibilities(CN, L, PS) :- findall(L, possibility(CN, L), PS).
 
-%common([], _).
+% check if all elements in the list are the same and assign that value to the second argument if so
+%
+%   ?- common([1,1,1], C).
+%   ?- common([1,2,1], C).
 common([A], A).
 common([A, A], A).
 common([A, B], _) :- \+ A = B.
@@ -318,18 +193,18 @@ commonsInner([], []).
 commonsInner([Col | Cols], [CC | CR]) :- common(Col, CC), commonsInner(Cols, CR).
 
 % given a list of possible bindings, calculate the positions that are the same in all of them
+%
+%   ?- length(L, 5), possibilities([1,1,1], L, PS), commons(PS, C), printRow(C).
+%   ?- L = [X1,X2,X3,X4,black,X6,black,white,X9,X10], possibilities([3,2], L, PS), commons(PS, C), printRow(C).
 commons([P | PS], C) :- length(P, Len), cols(0, Len, [P | PS], Cols), commonsInner(Cols, C).
 
+% convenience helper for use with maplist
 applyForce([Hints, L]) :- possibilities(Hints, L, PS), commons(PS, L).
 
-% needs to be run multiple times, e.g. until all variables are bound.
-%  (currently by hand, don't know yet how to do that.)
+
 nonogramGenForce(RowHints, ColHints, F) :-
     field(RowHints, ColHints, F),
-
-    length(RowHints, NumRows), length(ColHints, NumCols),
-    rows(0, NumRows, F, Rows), zip(RowHints, Rows, RowsWithHints),
-    cols(0, NumCols, F, Cols), zip(ColHints, Cols, ColsWithHints),
+    groupHints(RowHints, ColHints, F, RowsWithHints, ColsWithHints),
 
     maplist(applyForce, RowsWithHints),
     maplist(applyForce, ColsWithHints),
@@ -340,30 +215,34 @@ nonogramGenForce(RowHints, ColHints, F) :-
     true
 .
 
-%forces to run nonogramGenForce until all variables in F are bound
+% forces to run nonogramGenForce until all variables in F are bound
 nonogramGenForceFull(_,_,_, true).
 nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints, ColHints, F), \+ ground(F), nonogramGenForceFull(RowHints, ColHints, F, false).
 nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints, ColHints, F), ground(F), nonogramGenForceFull(RowHints, ColHints, F, true).
 
-%forces nonogramGenForce to run until more iterations cause no more changes
+% forces nonogramGenForce to run until more iterations cause no more changes
 nonogramGenForceLimes(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 == F1, nonogramGenForce(RowHints, ColHints, F2), nonogramGenForce(RowHints, ColHints, F2).
 nonogramGenForceLimes(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 = F1, nonogramGenForceLimes(RowHints, ColHints, F1, F2).
 
 % guesses content of field based on hints
 nonogramGenGuess(RowHints, ColHints, F) :-
     field(RowHints, ColHints, F),
-
-    length(RowHints, NumRows), length(ColHints, NumCols),
-    rows(0, NumRows, F, Rows), zip(RowHints, Rows, RowsWithHints),
-    cols(0, NumCols, F, Cols), zip(ColHints, Cols, ColsWithHints),
+    groupHints(RowHints, ColHints, F, RowsWithHints, ColsWithHints),
     
     maplist(applyConstrain, RowsWithHints),
     maplist(applyConstrain, ColsWithHints).
 
 % first derive, then guess
-nonogramMixedSolve(RowHints, ColHints, F) :-
+nonogramGenMixed(RowHints, ColHints, F) :-
     nonogramGenForceLimes(RowHints, ColHints, F, _),
     nonogramGenGuess(RowHints, ColHints, F).
+
+% convenience function to time the solution and print it
+nonogramSolve(RH, CH, F) :- time(nonogramGenMixed(RH, CH, F)), printNonogram(F).
+
+
+%% examples
+
     
 % this doesnt terminate for some reason, even if the solution of the riddle can be derived with nonogramGenForceLimes
 % with the example from http://www.janko.at/Raetsel/Nonogramme/221.a.htm it works
