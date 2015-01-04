@@ -121,37 +121,6 @@ nonogramGenHeuristic(RowHints, ColHints, F) :-
     maplist(applyConstrain, ColsWithHints)
 .
 
-nonogram1Gen(F) :-
-    nonogramGen([[2], [2, 1], [4], [1], [3]],
-                [[2], [3, 1], [1, 1], [3], [2]],
-                F).
-
-nonogram2Gen(F) :-
-    nonogramGen([[6],[1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1], [1,1,1,1],[1,1],[6]],
-                [[6],[1,1],[1,1,1,1],[1,4,1],[1,1],[1,1],[1,4,1],[1,1,1,1],[1,1],[6]],
-                F).
-
-nonogram3Gen(F) :-
-    nonogramGen([[7],[1,1],[1,1,1,1],[1,1],[1,3,1],[1,1],[7]],
-                [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]],
-                F).
-
-% list of simple nonograms sorted by increasing size: http://en.japonskie.ru/index.php?kind=1&resh=2&slev=1&lev=1&k_name=&notr=0&list=0&sort=1&sort_asc=1
-
-% correct. (from http://de.wikipedia.org/wiki/Nonogramm#Beispiel)
-%   nonogramGen([[0],[4],[6],[2,2],[2,2],[6],[4],[2],[2],[2],[0]],[[0],[9],[9],[2,2],[2,2],[4],[4],[0]],F), write(F).
-
-% doesn't finish. (from http://en.japonskie.ru/crossword/vopros1)
-%   nonogramGen([[7],[2,4],[2,3],[4,4],[5,4],[5,4],[5,4],[3,4],[4],[3],[3],[2],[1],[1],[],[3],[5],[5],[5],[3]],[[4],[6],[7],[2,5,3],[1,3,5],[1,3,5],[1,2,5],[2,3,3],[11],[10],[8],[5]],F), write(F).
-
-% correct. (from http://en.japonskie.ru/crossword/chashechka2)
-%   nonogramSolve([[8],[10],[1,8],[8],[4]],[[2],[1,1],[4],[4],[5],[5],[5],[5],[4],[3]], F).
-
-% incorrect. (from http://en.japonskie.ru/crossword/infogram)
-%   nonogramSolve([[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]], F).
-
-% incorrect. (from http://www.janko.at/Raetsel/Nonogramme/221.a.htm)
-%   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
 
 % assign the color C to the first Nth elements of L, R contains the remaining elements
 assign(_, 0, L, L).
@@ -243,24 +212,24 @@ nonogramSolve(RH, CH, F) :- time(nonogramGenMixed(RH, CH, F)), printNonogram(F).
 
 %% examples
 
-    
-% this doesnt terminate for some reason, even if the solution of the riddle can be derived with nonogramGenForceLimes
-% with the example from http://www.janko.at/Raetsel/Nonogramme/221.a.htm it works
-% RH = [[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], CH = [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], nonogramMixedSolve(RH, CH,F).
-% however this doesnt terminate (http://en.japonskie.ru/crossword/infogram)
-% RH = [[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], CH = [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]],nonogramMixedSolve(RH, CH,F).
+% nonogramSolve([[2], [2, 1], [4], [1], [3]], [[2], [3, 1], [1, 1], [3], [2]], F).
 
-% solution for http://www.janko.at/Raetsel/Nonogramme/221.a.htm
-%   needs 4 runs
-% RH = [[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], CH = [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
+% from http://de.wikipedia.org/wiki/Nonogramm#Beispiel
+%   nonogramSolve([[0],[4],[6],[2,2],[2,2],[6],[4],[2],[2],[2],[0]],[[0],[9],[9],[2,2],[2,2],[4],[4],[0]],F).
 
-% solution for nonogram3Gen
-%   needs 1 run
-% RH = [[7],[1,1],[1,1,1,1],[1,1],[1,3,1],[1,1],[7]], CH = [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]], nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
+% http://en.japonskie.ru/crossword/chashechka2
+%   nonogramSolve([[8],[10],[1,8],[8],[4]],[[2],[1,1],[4],[4],[5],[5],[5],[5],[4],[3]], F).
 
-% solution for http://en.japonskie.ru/crossword/infogram
-%   needs 6 runs
-% RH = [[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], CH = [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
+% from http://en.japonskie.ru/crossword/vopros1
+%   nonogramSolve([[7],[2,4],[2,3],[4,4],[5,4],[5,4],[5,4],[3,4],[4],[3],[3],[2],[1],[1],[],[3],[5],[5],[5],[3]],[[4],[6],[7],[2,5,3],[1,3,5],[1,3,5],[1,2,5],[2,3,3],[11],[10],[8],[5]],F).
 
-% solution for http://en.japonskie.ru/crossword/vopros1
-% RH = [[7],[2,4],[2,3],[4,4],[5,4],[5,4],[5,4],[3,4],[4],[3],[3],[2],[1],[1],[],[3],[5],[5],[5],[3]], CH = [[4],[6],[7],[2,5,3],[1,3,5],[1,3,5],[1,2,5],[2,3,3],[11],[10],[8],[5]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
+% from http://jowang.name/dotpix/#/play/19
+%   nonogramSolve([[7],[1,1],[1,1,1,1],[1,1],[1,3,1],[1,1],[7]], [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]], F).
+
+% from http://en.japonskie.ru/crossword/infogram
+%   nonogramSolve([[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]], F).
+
+% from http://www.janko.at/Raetsel/Nonogramme/221.a.htm
+%   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
+
+% list of simple nonograms sorted by increasing size: http://en.japonskie.ru/index.php?kind=1&resh=2&slev=1&lev=1&k_name=&notr=0&list=0&sort=1&sort_asc=1
