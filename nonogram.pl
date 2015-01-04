@@ -6,6 +6,7 @@
 mkRow([], []).
 mkRow([_ | T], [_ | RowRest]) :- mkRow(T, RowRest).
 
+% given row and column hints, generate the field with unassigned variables
 field([], _, []).
 field([_ | T], ColHints, [Row | FieldRest]) :- mkRow(ColHints, Row), field(T, ColHints, FieldRest).
 
@@ -18,21 +19,26 @@ field([_ | T], ColHints, [Row | FieldRest]) :- mkRow(ColHints, Row), field(T, Co
 %       [X41, X42, X43, X44, X45],
 %       [X51, X52, X53, X54, X55]].
 
+% a cell can be either white or black
 cell(white). cell(black).
 
 white(white).
 black(black).
 
+% generate all possible assignments for the given list of cells
 cells([]).
 cells([H | T]) :- cell(H), cells(T).
 
+% count the number of black cells in the list
 numBlacks([], 0).
 numBlacks([white | T], N) :- numBlacks(T, N).
 numBlacks([black | T], N) :- numBlacks(T, N1), N is N1 + 1.
 
+% color the n first elements of the first list black, the second list are the remaining elements
 blacks(0, L, L).
 blacks(N, [H | T], R) :- black(H), N1 is N - 1, blacks(N1, T, R).
 
+% constrain generates all valid assignments given a hint and a corresponding line
 %constrain(N, Row) :- N = numBlacks(Row).
 constrain([], _).
 constrain([0], []).
@@ -45,21 +51,31 @@ constrain([0| Y], [H | T]) :- white(H), print(' rule 6 '), constrain(Y, T).
 constrain([X| Y], L) :- \+ X = 0, print(' rule 7 '), blacks(X, L, R), constrain([0 | Y], R).
 constrain([X| Y], [H | T]) :- \+ X = 0, print(' rule 8 '),white(H), constrain([X | Y], T).
 
+% get the nth row from a field
 row(0, [R | _], R).
 row(N, [_ | T], R) :- N1 is N - 1, row(N1, T, R).
 
+% get the nth element from a list
 nth(0, [X | _], X).
 nth(N, [_ | T], X) :- N1 is N - 1, nth(N1, T, X).
 
+% get the nth column from a field
 col(_, [], []).
 col(N, [H | T], [X | R]) :- nth(N, H, X), col(N, T, R).
 
-% 5x5, 3 -> fill(2, 3, black, _)
-% 5x5, 4 -> fill(1, 4, black, _)
+% assign the color C to the elements between S and E
+%   (P counts the "current" position, initialize with 0)
+%
+%   ?- fill(0, 2, 5, black, [X1,X2,X3,X4,X5,X6,X7]).
+%   X3 = X4, X4 = X5, X5 = black
 fill(P, S, E, C, [_ | T]) :- P < S, P1 is P + 1, fill(P1, S, E, C, T).
 fill(P, S, E, C, [H | T]) :- P >= S, P < E, H = C, P1 is P + 1, fill(P1, S, E, C, T).
 fill(P, S, E, _, _) :- P >= S, P >= E.
 
+% assign black to fields that are guaranteed to be black
+%
+%   ?- safeBlacks(7, [5], [X1,X2,X3,X4,X5,X6,X7]).
+%   X3 = X4, X4 = X5, X5 = black
 safeBlacks(Len, [N], L) :- Border is Len - N, Border < N, End is Len - Border, fill(0, Border, End, black, L).
 safeBlacks(Len, [H, _ | _], L) :- safeBlacks(Len, [H], L).
 safeBlacks(_, _, _).
@@ -188,19 +204,27 @@ nonogram3(X11, X12, X13, X14, X15,
 
 %nonogram(X11, X12, X13, X14, X15, X21, X22, X23, X24, X25, X31, X32, X33, X34, X35, X41, X42, X43, X44, X45, X51, X52, X53, X54, X55).
 
+% get the rows from S to E from the field
+%
+%   % get all rows from a field
+%   ?- rows(0, NumRows, F, R)
 rows(S, E, _, []) :- S >= E.
 rows(S, E, F, [R1 | RR]) :- S < E, row(S, F, R1), S1 is S + 1, rows(S1, E, F, RR).
 
+% get the columns from S to E from the field
 cols(S, E, _, []) :- S >= E.
 cols(S, E, F, [C1 | CC]) :- S < E, col(S, F, C1), S1 is S + 1, cols(S1, E, F, CC).
 
+% joins pairs from two lists (cf. zip in e.g. haskell)
 zip([], [], []).
 zip([H1 | T1], [H2 | T2], [[H1, H2] | RR]) :- zip(T1, T2, RR).
 
+% helper functions to be usable on a list of hint/line pairs
 applySafeBlacks([Hints, L]) :- length(L, Len), safeBlacks(Len, Hints, L).
-
 applyConstrain([Hints, L]) :- constrain(Hints, L).
 
+% find a solution by constructing the field, finding "safe" black fields and
+%  guessing the remaining fields based on the constraints
 nonogramGen(RowHints, ColHints, F) :-
     field(RowHints, ColHints, F),
     
@@ -223,6 +247,7 @@ printRow([white | T]) :- write('◻'), write(' '), printRow(T).
 printNonogram([]).
 printNonogram([H | T]) :- printRow(H), printNonogram(T).
 
+% convenience function to time the solution and print it
 nonogramSolve(R, C, F) :- time(nonogramGen(R, C, F)), printNonogram(F).
 
 nonogram1Gen(F) :-
@@ -257,6 +282,7 @@ nonogram3Gen(F) :-
 % incorrect. (from http://www.janko.at/Raetsel/Nonogramme/221.a.htm)
 %   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
 
+% assign the color C to the first Nth elements of L, R contains the remaining elements
 assign(_, 0, L, L).
 assign(C, N, [C | T], R) :- N1 is N - 1, assign(C, N1, T, R).
 
