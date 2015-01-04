@@ -320,3 +320,10 @@ nonogramGenForce(RowHints, ColHints, F) :-
 % solution for nonogram3Gen
 %   needs 1 run
 % RH = [[7],[1,1],[1,1,1,1],[1,1],[1,3,1],[1,1],[7]], CH = [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]], nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
+
+% solution for http://en.japonskie.ru/crossword/infogram
+%   needs 6 runs
+% RH = [[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], CH = [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
+
+% solution for http://en.japonskie.ru/crossword/vopros1
+% RH = [[7],[2,4],[2,3],[4,4],[5,4],[5,4],[5,4],[3,4],[4],[3],[3],[2],[1],[1],[],[3],[5],[5],[5],[3]], CH = [[4],[6],[7],[2,5,3],[1,3,5],[1,3,5],[1,2,5],[2,3,3],[11],[10],[8],[5]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
