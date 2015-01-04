@@ -255,4 +255,68 @@ nonogram3Gen(F) :-
 %   nonogramSolve([[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]], F).
 
 % incorrect. (from http://www.janko.at/Raetsel/Nonogramme/221.a.htm)
-%   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
+%   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
+
+assign(_, 0, L, R) :- L = R.
+assign(C, N, [H | T], R) :- H = C, N1 is N - 1, assign(C, N1, T, R).
+
+% require that all elements of the list are of the given color
+allC(_, []).
+allC(C, [H | T]) :- H = C, allC(C, T).
+
+% minimum length of a constraint
+minLength([], L) :- L = 0.
+minLength([N], L) :- L = N.
+minLength([N1, N2], L) :- L is N1 + 1 + N2.
+minLength([N1, N2 | RN], L) :- \+ RN = [], minLength(RN, RL), L is N1 + 1 + N2 + 1 + RL.
+
+% given a constraint and a "line", checks if it's a possible (valid) binding
+possibility([], _).
+possibility([N], L) :- length(L, Len), Len >= N, assign(black, N, L, R), allC(white, R).
+possibility([N], [H | T]) :- length([H | T], Len), Len > N, white(H), possibility([N], T).
+possibility([N | RN], L) :- \+ RN = [], length(L, Len), minLength([N | RN], ML), Len >= ML, assign(black, N, L, [RH | RT]), white(RH), possibility(RN, RT).
+possibility([N | RN], [H | T]) :- \+ RN = [], length([H | T], Len), minLength([N | RN], ML), Len > ML, white(H), possibility([N | RN], T).
+
+% given a constraint and a line, calculates a list of all possibilities
+possibilities(CN, L, PS) :- findall(L, possibility(CN, L), PS).
+
+%common([], _).
+common([A], C) :- A = C.
+common([A, B], C) :- A = B, A = C.
+common([A, B], _) :- \+ A = B.
+common([A, B | R], C) :- \+ R = [], A = B, common([B | R], C).
+common([A, B | R], _) :- \+ R = [], \+ A = B.
+
+commonsInner([], []).
+commonsInner([Col | Cols], C) :- common(Col, CC), C = [CC | CR], commonsInner(Cols, CR).
+
+% given a list of possible bindings, calculate the positions that are the same in all of them
+commons([P | PS], C) :- length(P, Len), cols(0, Len, [P | PS], Cols), commonsInner(Cols, C).
+
+applyForce([Hints, L]) :- possibilities(Hints, L, PS), commons(PS, L).
+
+% needs to be run multiple times, e.g. until all variables are bound.
+%  (currently by hand, don't know yet how to do that.)
+nonogramGenForce(RowHints, ColHints, F) :-
+    field(RowHints, ColHints, F),
+
+    length(RowHints, NumRows), length(ColHints, NumCols),
+    rows(0, NumRows, F, Rows), zip(RowHints, Rows, RowsWithHints),
+    cols(0, NumCols, F, Cols), zip(ColHints, Cols, ColsWithHints),
+
+    maplist(applyForce, RowsWithHints),
+    maplist(applyForce, ColsWithHints),
+
+    %maplist(applyConstrain, RowsWithHints),
+    %maplist(applyConstrain, ColsWithHints),
+
+    true
+.
+
+% solution for http://www.janko.at/Raetsel/Nonogramme/221.a.htm
+%   needs 4 runs
+% RH = [[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], CH = [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
+
+% solution for nonogram3Gen
+%   needs 1 run
+% RH = [[7],[1,1],[1,1,1,1],[1,1],[1,3,1],[1,1],[7]], CH = [[7],[1,1],[1,1,1,1],[1,1,1],[1,1,1,1],[1,1],[7]], nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
