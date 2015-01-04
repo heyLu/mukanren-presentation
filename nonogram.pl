@@ -318,6 +318,10 @@ nonogramGenForceFull(_,_,_, true).
 nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints, ColHints, F), \+ ground(F), nonogramGenForceFull(RowHints, ColHints, F, false).
 nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints, ColHints, F), ground(F), nonogramGenForceFull(RowHints, ColHints, F, true).
 
+%forces nonogramGenForce to run until more iterations cause no more changes
+nonogramGenForceLime(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 == F1, nonogramGenForce(RowHints, ColHints, F2).
+nonogramGenForceLime(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 = F1, nonogramGenForceLime(RowHints, ColHints, F1, F2).
+
 % solution for http://www.janko.at/Raetsel/Nonogramme/221.a.htm
 %   needs 4 runs
 % RH = [[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], CH = [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
