@@ -232,4 +232,7 @@ nonogramSolve(RH, CH, F) :- time(nonogramGenMixed(RH, CH, F)), printNonogram(F).
 % from http://www.janko.at/Raetsel/Nonogramme/221.a.htm
 %   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
 
+% http://en.japonskie.ru/crossword/black_cat
+%   nonogramSolve([[4],[1,1,1],[5,4],[1,1,1,1],[12],[11],[8],[4,1,1],[1,1,1,2],[1,1,1]], [[4],[1,2,2],[4,1],[1,6],[7],[3],[3],[3],[3,6],[1,1,3],[1,1,5],[1,4,2]], F).
+
 % list of simple nonograms sorted by increasing size: http://en.japonskie.ru/index.php?kind=1&resh=2&slev=1&lev=1&k_name=&notr=0&list=0&sort=1&sort_asc=1
