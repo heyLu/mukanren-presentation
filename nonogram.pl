@@ -221,7 +221,8 @@ zip([H1 | T1], [H2 | T2], [[H1, H2] | RR]) :- zip(T1, T2, RR).
 
 % helper functions to be usable on a list of hint/line pairs
 applySafeBlacks([Hints, L]) :- length(L, Len), safeBlacks(Len, Hints, L).
-applyConstrain([Hints, L]) :- constrain(Hints, L).
+%applyConstrain([Hints, L]) :- write(Hints), write(' '), write(L), nl, possibility(Hints, L).
+applyConstrain([Hints, L]) :- possibility(Hints, L).
 
 % find a solution by constructing the field, finding "safe" black fields and
 %  guessing the remaining fields based on the constraints
