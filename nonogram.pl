@@ -313,6 +313,11 @@ nonogramGenForce(RowHints, ColHints, F) :-
     true
 .
 
+%forces to run nonogramGenForce until all variables in F are bound
+nonogramGenForceFull(_,_,_, true).
+nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints, ColHints, F), \+ ground(F), nonogramGenForceFull(RowHints, ColHints, F, false).
+nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints, ColHints, F), ground(F), nonogramGenForceFull(RowHints, ColHints, F, true).
+
 % solution for http://www.janko.at/Raetsel/Nonogramme/221.a.htm
 %   needs 4 runs
 % RH = [[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], CH = [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, nonogramGenForce(RH, CH, F), write(F), nl, printNonogram(F).
