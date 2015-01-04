@@ -40,10 +40,10 @@ constrain([0], [H | T]) :- white(H), constrain([0], T).
 %constrain([N], [H | T]) :- \+ N = 0, N1 is N - 1, black(H), constrain([N1], T).
 constrain([N], L) :- \+ N = 0, blacks(N, L, R), constrain([0], R).
 constrain([N], [H | T]) :- \+ N = 0, white(H), constrain([N], T).
-constrain([0, Y], [H | T]) :- white(H), constrain([Y], T).
+constrain([0| Y], [H | T]) :- white(H), print(' rule 6 '), constrain(Y, T).
 %constrain([X, Y], [H | T]) :- \+ X = 0, X1 is X - 1, black(H), constrain([X1, Y], T).
-constrain([X, Y], L) :- \+ X = 0, blacks(X, L, R), constrain([0, Y], R).
-constrain([X, Y], [H | T]) :- \+ X = 0, white(H), constrain([X, Y], T).
+constrain([X| Y], L) :- \+ X = 0, print(' rule 7 '), blacks(X, L, R), constrain([0 | Y], R).
+constrain([X| Y], [H | T]) :- \+ X = 0, print(' rule 8 '),white(H), constrain([X | Y], T).
 
 row(0, [R | _], R).
 row(N, [_ | T], R) :- N1 is N - 1, row(N1, T, R).
@@ -321,6 +321,28 @@ nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints,
 %forces nonogramGenForce to run until more iterations cause no more changes
 nonogramGenForceLimes(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 == F1, nonogramGenForce(RowHints, ColHints, F2), nonogramGenForce(RowHints, ColHints, F2).
 nonogramGenForceLimes(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 = F1, nonogramGenForceLimes(RowHints, ColHints, F1, F2).
+
+% guesses content of field based on hints
+nonogramGenGuess(RowHints, ColHints, F) :-
+    field(RowHints, ColHints, F),
+
+    length(RowHints, NumRows), length(ColHints, NumCols),
+    rows(0, NumRows, F, Rows), zip(RowHints, Rows, RowsWithHints),
+    cols(0, NumCols, F, Cols), zip(ColHints, Cols, ColsWithHints),
+    
+    maplist(applyConstrain, RowsWithHints),
+    maplist(applyConstrain, ColsWithHints).
+
+% first derive, then guess
+nonogramMixedSolve(RowHints, ColHints, F) :-
+    nonogramGenForceLimes(RowHints, ColHints, F, _),
+    nonogramGenGuess(RowHints, ColHints, F).
+    
+% this doesnt terminate for some reason, even if the solution of the riddle can be derived with nonogramGenForceLimes
+% with the example from http://www.janko.at/Raetsel/Nonogramme/221.a.htm it works
+% RH = [[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], CH = [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], nonogramMixedSolve(RH, CH,F).
+% however this doesnt terminate (http://en.japonskie.ru/crossword/infogram)
+% RH = [[5],[2,2],[1,1,1,1],[1,1],[2,3],[1,2,2,2],[4],[1,1],[3,3]], CH = [[1],[1],[5,1],[2,2,1],[1,1,3],[1,1],[1,1,4],[2,2,1],[4,1],[2],[1]],nonogramMixedSolve(RH, CH,F).
 
 % solution for http://www.janko.at/Raetsel/Nonogramme/221.a.htm
 %   needs 4 runs
