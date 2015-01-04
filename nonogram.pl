@@ -4,10 +4,10 @@
 %field([R | T], ColHints, F) :- append(F, row(ColHints, Row)
 
 mkRow([], []).
-mkRow([_ | T], Row) :- Row = [_ | RowRest], mkRow(T, RowRest).
+mkRow([_ | T], [_ | RowRest]) :- mkRow(T, RowRest).
 
 field([], _, []).
-field([_ | T], ColHints, F) :- mkRow(ColHints, Row), F = [Row | FieldRest], field(T, ColHints, FieldRest).
+field([_ | T], ColHints, [Row | FieldRest]) :- mkRow(ColHints, Row), field(T, ColHints, FieldRest).
 
 %row([], R) :- R.
 %row([H | T], R) :- append(_
@@ -26,11 +26,11 @@ black(black).
 cells([]).
 cells([H | T]) :- cell(H), cells(T).
 
-numBlacks([], N) :- N = 0.
+numBlacks([], 0).
 numBlacks([white | T], N) :- numBlacks(T, N).
 numBlacks([black | T], N) :- numBlacks(T, N1), N is N1 + 1.
 
-blacks(0, L, R) :- L = R.
+blacks(0, L, L).
 blacks(N, [H | T], R) :- black(H), N1 is N - 1, blacks(N1, T, R).
 
 %constrain(N, Row) :- N = numBlacks(Row).
@@ -52,7 +52,7 @@ nth(0, [X | _], X).
 nth(N, [_ | T], X) :- N1 is N - 1, nth(N1, T, X).
 
 col(_, [], []).
-col(N, [H | T], C) :- nth(N, H, X), C = [X | R], col(N, T, R).
+col(N, [H | T], [X | R]) :- nth(N, H, X), col(N, T, R).
 
 % 5x5, 3 -> fill(2, 3, black, _)
 % 5x5, 4 -> fill(1, 4, black, _)
@@ -189,13 +189,13 @@ nonogram3(X11, X12, X13, X14, X15,
 %nonogram(X11, X12, X13, X14, X15, X21, X22, X23, X24, X25, X31, X32, X33, X34, X35, X41, X42, X43, X44, X45, X51, X52, X53, X54, X55).
 
 rows(S, E, _, []) :- S >= E.
-rows(S, E, F, R) :- S < E, row(S, F, R1), R = [R1 | RR], S1 is S + 1, rows(S1, E, F, RR).
+rows(S, E, F, [R1 | RR]) :- S < E, row(S, F, R1), S1 is S + 1, rows(S1, E, F, RR).
 
 cols(S, E, _, []) :- S >= E.
-cols(S, E, F, C) :- S < E, col(S, F, C1), C = [C1 | CC], S1 is S + 1, cols(S1, E, F, CC).
+cols(S, E, F, [C1 | CC]) :- S < E, col(S, F, C1), S1 is S + 1, cols(S1, E, F, CC).
 
 zip([], [], []).
-zip([H1 | T1], [H2 | T2], R) :- R = [[H1, H2] | RR], zip(T1, T2, RR).
+zip([H1 | T1], [H2 | T2], [[H1, H2] | RR]) :- zip(T1, T2, RR).
 
 applySafeBlacks([Hints, L]) :- length(L, Len), safeBlacks(Len, Hints, L).
 
@@ -257,16 +257,16 @@ nonogram3Gen(F) :-
 % incorrect. (from http://www.janko.at/Raetsel/Nonogramme/221.a.htm)
 %   nonogramSolve([[2],[4,1],[1,1],[2,1,2],[9],[7,1],[9],[6,2],[4,2],[5]], [[1],[1,4],[2,6],[2,7],[1,6],[8],[1,4,1],[4,2],[2,3],[4]], F).
 
-assign(_, 0, L, R) :- L = R.
-assign(C, N, [H | T], R) :- H = C, N1 is N - 1, assign(C, N1, T, R).
+assign(_, 0, L, L).
+assign(C, N, [C | T], R) :- N1 is N - 1, assign(C, N1, T, R).
 
 % require that all elements of the list are of the given color
 allC(_, []).
-allC(C, [H | T]) :- H = C, allC(C, T).
+allC(C, [C | T]) :- allC(C, T).
 
 % minimum length of a constraint
-minLength([], L) :- L = 0.
-minLength([N], L) :- L = N.
+minLength([], 0).
+minLength([N], N).
 minLength([N1, N2], L) :- L is N1 + 1 + N2.
 minLength([N1, N2 | RN], L) :- \+ RN = [], minLength(RN, RL), L is N1 + 1 + N2 + 1 + RL.
 
@@ -281,14 +281,14 @@ possibility([N | RN], [H | T]) :- \+ RN = [], length([H | T], Len), minLength([N
 possibilities(CN, L, PS) :- findall(L, possibility(CN, L), PS).
 
 %common([], _).
-common([A], C) :- A = C.
-common([A, B], C) :- A = B, A = C.
+common([A], A).
+common([A, A], A).
 common([A, B], _) :- \+ A = B.
-common([A, B | R], C) :- \+ R = [], A = B, common([B | R], C).
+common([A, A | R], C) :- \+ R = [], common([A | R], C).
 common([A, B | R], _) :- \+ R = [], \+ A = B.
 
 commonsInner([], []).
-commonsInner([Col | Cols], C) :- common(Col, CC), C = [CC | CR], commonsInner(Cols, CR).
+commonsInner([Col | Cols], [CC | CR]) :- common(Col, CC), commonsInner(Cols, CR).
 
 % given a list of possible bindings, calculate the positions that are the same in all of them
 commons([P | PS], C) :- length(P, Len), cols(0, Len, [P | PS], Cols), commonsInner(Cols, C).
