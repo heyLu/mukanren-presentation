@@ -216,9 +216,9 @@ nonogramGen(RowHints, ColHints, F) :-
 .
 
 printRow([]) :- nl, true.
+printRow([X | T]) :- var(X), write('¿'), write(' '), printRow(T).
 printRow([black | T]) :- write('◼'), write(' '), printRow(T).
 printRow([white | T]) :- write('◻'), write(' '), printRow(T).
-printRow([_ | T]) :- write('¿'), write(' '), printRow(T).
 
 printNonogram([]).
 printNonogram([H | T]) :- printRow(H), printNonogram(T).
@@ -319,8 +319,8 @@ nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints,
 nonogramGenForceFull(RowHints, ColHints, F, false) :- nonogramGenForce(RowHints, ColHints, F), ground(F), nonogramGenForceFull(RowHints, ColHints, F, true).
 
 %forces nonogramGenForce to run until more iterations cause no more changes
-nonogramGenForceLime(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 == F1, nonogramGenForce(RowHints, ColHints, F2).
-nonogramGenForceLime(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 = F1, nonogramGenForceLime(RowHints, ColHints, F1, F2).
+nonogramGenForceLimes(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 == F1, nonogramGenForce(RowHints, ColHints, F2), nonogramGenForce(RowHints, ColHints, F2).
+nonogramGenForceLimes(RowHints, ColHints, F1, F2) :- nonogramGenForce(RowHints, ColHints, F1), F2 = F1, nonogramGenForceLimes(RowHints, ColHints, F1, F2).
 
 % solution for http://www.janko.at/Raetsel/Nonogramme/221.a.htm
 %   needs 4 runs
