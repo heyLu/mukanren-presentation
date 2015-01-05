@@ -3,6 +3,98 @@
 %% Eugen Rein, Jakob Matthes, Lucas Stadler
 
 
+%% introduction
+
+% # An example
+%
+% A nonogram is given by it's row and column hints, both of which are
+% lists of lists of integers.
+%
+% For example, consider this simple nonogram:
+%
+%       3 1
+%     2 1 1 3 2
+%   2 _ _ _ _ _
+% 2 1 _ _ _ _ _
+%   4 _ _ _ _ _
+%   1 _ _ _ _ _
+%   3 _ _ _ _ _
+%
+% The row hints would be `[[2], [2, 1], [4], [1], [3]]` and the column
+% hints would be `[[2], [3, 1], [1, 1], [3], [2]]`.
+%
+% To solve the above nonogram, run `nonogramSolve(RH, CH, F).`, where
+% `RH` and `CH` are the row and column hints.
+%
+% `nonogramSolve` is a convenience predicate that uses `nonogramGenMixed`
+% to solve the nonogram, but also times it and prints the result.
+
+% # Solving strategy
+%
+% Our solution strategy is based on the idea that the hints always 
+% "force" some field values.
+% Consider the following example:
+%
+%    4 _ _ _ _ _
+%
+% Every valid assignment must assign 'black' to the center three fields,
+% this we now know their values:
+%
+%    4 _ ◼ ◼ ◼ _
+%
+% A slightly more interesting example:
+%
+%  3 2 _ _ _ _ ◼ _ ◼ ◻ _ _
+%
+% We must transform '◼ _ ◼' into '◼ ◼ ◼', because single '◼' blocks are
+% not allowed by the hint. In turn, there is only one position for the
+% '◼ ◼' block, i.e. at the end of the line and we know that all other
+% fields must be '◻':
+%
+%  3 2 ◻ ◻ ◻ ◻ ◼ ◼ ◼ ◻ ◼ ◼
+%
+% To compute which fields are "forced" we compute all valid assignments
+% of a hint, given a line. This line (e.g. a row or column) may already
+% contain some "forced" values, which restricts the remaining
+% possibilities.
+% Among these possibilities we check which fields have the same value in
+% all possibilities, these are the forced values.
+%
+% The possibilities are calculated with a predicate of the same name and
+% the common fields are computed using `commons`:
+%
+%   ?- L = [X1, X2, X3, X4, X5], possibilities([4], L, PS), commons(PS, C), printRow(C).
+%   ¿ ◼ ◼ ◼ ¿
+%   C = [_G592, black, black, black, _G604]
+%
+% `nonogramGenForceLimes` forces fields until there are no more changes.
+%
+% In addition to the 'forcing' described above, we also use a 'guessing'
+% strategy, which just fills in the unknown fields based on the hints,
+% trying all possible assignments.
+% This guessing strategy is used after the forcing strategy, to fill in
+% any remaining fields.
+
+% # Reading the code
+%
+% Start by solving some examples using `nonogramSolve`, then read it's
+% definition, which refers you to `nonogramGenMixed`.
+%
+% `nonogramGenMixed` calls `nonogramGenForceLimes` and `nonogramGenGuess`,
+% which are implementations of the forcing and guessing strategies.
+%
+% The `possibility` predicate is the central piece of the code, it calculates
+% the possible assignments for a line, based on the hint for it. Both
+% strategies use this predicate.
+%
+% The forcing strategy generates all possible assignments with it and
+% calculates the common fields, as described above.
+%
+% The guessing strategy uses the `possibility` predicate to try all
+% possible assignments and finishes if it has found values for all free
+% variables.
+
+
 %% field construction
 
 
@@ -211,6 +303,7 @@ nonogramSolve(RH, CH, F) :- time(nonogramGenMixed(RH, CH, F)), printNonogram(F).
 
 
 %% examples
+
 
 % nonogramSolve([[2], [2, 1], [4], [1], [3]], [[2], [3, 1], [1, 1], [3], [2]], F).
 
