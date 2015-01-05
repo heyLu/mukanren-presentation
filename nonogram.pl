@@ -12,13 +12,13 @@
 %
 % For example, consider this simple nonogram:
 %
-%       3 1
-%     2 1 1 3 2
-%   2 _ _ _ _ _
-% 2 1 _ _ _ _ _
-%   4 _ _ _ _ _
-%   1 _ _ _ _ _
-%   3 _ _ _ _ _
+%        3 1
+%      2 1 1 3 2
+%   2  _ _ _ _ _
+% 2 1  _ _ _ _ _
+%   4  _ _ _ _ _
+%   1  _ _ _ _ _
+%   3  _ _ _ _ _
 %
 % The row hints would be `[[2], [2, 1], [4], [1], [3]]` and the column
 % hints would be `[[2], [3, 1], [1, 1], [3], [2]]`.
@@ -35,23 +35,23 @@
 % "force" some field values.
 % Consider the following example:
 %
-%    4 _ _ _ _ _
+%    4  _ _ _ _ _
 %
 % Every valid assignment must assign 'black' to the center three fields,
 % this we now know their values:
 %
-%    4 _ ◼ ◼ ◼ _
+%    4  _ ◼ ◼ ◼ _
 %
 % A slightly more interesting example:
 %
-%  3 2 _ _ _ _ ◼ _ ◼ ◻ _ _
+%  3 2  _ _ _ _ ◼ _ ◼ ◻ _ _
 %
 % We must transform '◼ _ ◼' into '◼ ◼ ◼', because single '◼' blocks are
 % not allowed by the hint. In turn, there is only one position for the
 % '◼ ◼' block, i.e. at the end of the line and we know that all other
 % fields must be '◻':
 %
-%  3 2 ◻ ◻ ◻ ◻ ◼ ◼ ◼ ◻ ◼ ◼
+%  3 2  ◻ ◻ ◻ ◻ ◼ ◼ ◼ ◻ ◼ ◼
 %
 % To compute which fields are "forced" we compute all valid assignments
 % of a hint, given a line. This line (e.g. a row or column) may already
