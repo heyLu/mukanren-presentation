@@ -297,6 +297,44 @@ nonogramGenMixed(RowHints, ColHints, F) :-
 nonogramSolve(RH, CH, F) :- time(nonogramGenMixed(RH, CH, F)), printNonogram(F).
 
 
+%% solver with sorting
+
+
+% this solver sorts the lines once by number of possible assignments in the
+% beginning, speeding up the guessing process afterwards and also leading to
+% a few less recursive forcing calls.
+
+% sort two lines with hints
+deltaHint(<, [H1, L1], [H2, L2]) :- possibilities(H1, L1, PS1), possibilities(H2, L2, PS2), length(PS1, N1), length(PS2, N2), N1 < N2.
+deltaHint(>, [H1, L1], [H2, L2]) :- possibilities(H1, L1, PS1), possibilities(H2, L2, PS2), length(PS1, N1), length(PS2, N2), N1 > N2.
+deltaHint(>, [H1, L1], [H2, L2]) :- possibilities(H1, L1, PS1), possibilities(H2, L2, PS2), length(PS1, N1), length(PS2, N2), \+ L1 == L2, N1 == N2.
+deltaHint(=, [H1, L1], [H2, L2]) :- possibilities(H1, L1, PS1), possibilities(H2, L2, PS2), length(PS1, N1), length(PS2, N2), L1 == L2, N1 == N2.
+
+% sortHints(+LinesWithHins, -SortedLinesWithHints)
+sortHints(LWH, SLWH) :- predsort(deltaHint, LWH, SLWH).
+
+% the following are very similar to the non-sorted versions, but they
+% are simpler, because the field generation and line zipping is done
+% earlier and all constraints are passed in a single list.
+
+nonogramGenForce(LWH) :- maplist(applyForce, LWH).
+
+nonogramGenForceLimes(LWH1, LWH2) :- nonogramGenForce(LWH1), LWH2 == LWH1, nonogramGenForce(LWH2), nonogramGenForce(LWH2).
+nonogramGenForceLimes(LWH1, LWH2) :- nonogramGenForce(LWH1), LWH2 = LWH1, nonogramGenForceLimes(LWH1, LWH2).
+
+nonogramGenGuess(LWH) :- maplist(applyConstrain, LWH).
+
+nonogramGenMixed(LWH) :-
+    nonogramGenForceLimes(LWH, _),
+    nonogramGenGuess(LWH).
+
+% a variant of field that generates the sorted lines with hints
+field(RH, CH, F, LWH) :- field(RH, CH, F), groupHints(RH, CH, F, RWH, CWH), append(RWH, CWH, ULWH), sortHints(ULWH, LWH).
+
+% convenience function, similar to nonogramSolve
+nonogramSolveSorted(RH, CH, F) :- time((field(RH, CH, F, LWH), nonogramGenMixed(LWH))), printNonogram(F).
+
+
 %% examples
 
 
