@@ -110,8 +110,7 @@ field([_ | T], ColHints, [Row | FieldRest]) :- mkRow(ColHints, Row), field(T, Co
 
 
 % get the nth row from a field
-row(0, [R | _], R).
-row(N, [_ | T], R) :- N1 is N - 1, row(N1, T, R).
+row(N, Rows, R) :- nth0(N, Rows, R).
 
 % get the nth column from a field
 col(_, [], []).
