@@ -361,4 +361,10 @@ nonogramSolveSorted(RH, CH, F) :- time((field(RH, CH, F, LWH), nonogramGenMixed(
 % http://en.japonskie.ru/crossword/black_cat
 %   nonogramSolve([[4],[1,1,1],[5,4],[1,1,1,1],[12],[11],[8],[4,1,1],[1,1,1,2],[1,1,1]], [[4],[1,2,2],[4,1],[1,6],[7],[3],[3],[3],[3,6],[1,1,3],[1,1,5],[1,4,2]], F).
 
+% http://jowang.name/dotpix/#/play/18
+%   nonogramSolveSorted([[6],[1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1], [1,1,1,1],[1,1],[6]], [[6],[1,1],[1,1,1,1],[1,4,1],[1,1],[1,1],[1,4,1],[1,1,1,1],[1,1],[6]], F).
+
+% http://www.janko.at/Raetsel/Nonogramme/338.a.htm
+%   nonogramSolveSorted([[9],[7,2],[2,5,2],[2,2,2,2],[1,3,3,1],[1,1],[1,2,2,1],[1,2,2,1],[1,1],[1,1,1],[1,2,1],[2,1,2,2],[2,5,2],[2,2],[9]], [[9],[2,2],[2,2],[2,2],[5,2,1,1],[5,2,1,1],[3,1,1,1,1],[3,1,1],[5,2,1,1],[1,2,2,3,1],[1,1,2,1],[2,2],[2,2],[2,2],[9]], F).
+
 % list of simple nonograms sorted by increasing size: http://en.japonskie.ru/index.php?kind=1&resh=2&slev=1&lev=1&k_name=&notr=0&list=0&sort=1&sort_asc=1
