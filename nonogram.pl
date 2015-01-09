@@ -113,13 +113,9 @@ field([_ | T], ColHints, [Row | FieldRest]) :- mkRow(ColHints, Row), field(T, Co
 row(0, [R | _], R).
 row(N, [_ | T], R) :- N1 is N - 1, row(N1, T, R).
 
-% get the nth element from a list
-nth(0, [X | _], X).
-nth(N, [_ | T], X) :- N1 is N - 1, nth(N1, T, X).
-
 % get the nth column from a field
 col(_, [], []).
-col(N, [H | T], [X | R]) :- nth(N, H, X), col(N, T, R).
+col(N, [H | T], [X | R]) :- nth0(N, H, X), col(N, T, R).
 
 % get the rows from S to E from the field
 %
