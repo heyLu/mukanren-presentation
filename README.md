@@ -13,3 +13,9 @@
 * [miniKanren implementation](https://github.com/miniKanren/miniKanren),
     use `(load "<path-to-dir>/mk.scm")` to load it in petite
 * <http://minikanren.org>
+* [Negation as failure](http://en.wikipedia.org/wiki/Logic_programming#Negation_as_failure)
+    - [Negation as failure](https://groups.google.com/forum/#!topic/minikanren/YZsQaQUesWo)
+        in `core.logic` ([code](https://github.com/clojure/core.logic/commit/94eab54faa33122f952f19bf2f30364b8723c354)),
+        including some notes from Dan Friedman why you often don't want that.
+    - William E. Byrd notes in his thesis that you can implement negation as failure in
+        miniKanren using `conda` and `condu` (p. 84, footnote #3)
