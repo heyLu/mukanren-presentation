@@ -1,3 +1,9 @@
+# μKanren
+
+- relational programming
+- scheme
+- 39 lines
+
 # Scheme
 
 (+ 1 2)
@@ -18,24 +24,31 @@
 # Examples
 
 (run* (q)
-  (=== q 5))
+  (*===* q 5))
 ; (5)
 
-; (=== q q) (?)
+(run* (q)
+  (=== q q))
+; (_.0)
 
 (run* (q)
-  (disj
+  (*disj*
     (=== q 5)
     (=== q 6)))
 ; (5 6)
 
 (run* (q)
-  (conj
+  (*conj*
     (=== q 5)
     (=== q 6)))
 ; ()
 
-; (fresh ...)
+(run* (q)
+  (*fresh* (r)
+    (conj
+      (=== q r)
+      (=== r 42))))
+; 42
 
 (run* (q)
   (fresh (y)
@@ -46,17 +59,27 @@
         (=== y 7)))))
 ; ((5 6) (5 7))
 
-(run* (x)
-  (=== x 5))
-; (5)
-
 # Concepts
 
-(=== #(0) 5)
+(run* (q)
+  (=== *q* 5))
+
+; "actually":
+((call/fresh
+   (lambda (q)
+     (=== q 5)))
+ empty-state)
+((((#(0) . 5)) . 1))
+
+q is a variable, displayed as #(0)
+(var 0)
+; #(0)
+
+(=== (var 0) 5)
 ; <goal> (a function of one argument)
 
-((=== #(0) 5) '(() . 1))
-; ((#(0) . 5)) (a stream, e.g. a list of substitutions)
+((=== (var 0) 5) '(() . 1))
+; (((#(0) . 5) . 1)) (a stream, e.g. a list of states)
 
 state:
 (((#(0) . 5) (#(1) . #(0)) (#(2) . (1 2 3))) . 3)
@@ -70,8 +93,9 @@ substitution: mapping of variables to values (or other variables)
 (run* (x)
   (=== x 5))
 
-(=== #(0) 5)
+(*===* (var 0) 5)
 
+; goal constructor -> unify -> unit stream or empty stream
 (define (=== x y)
   (lambda (*s/c*)
     (let ((s (*unify* u v (car s/c))))
@@ -79,38 +103,128 @@ substitution: mapping of variables to values (or other variables)
         (unit `(,s . ,(cdr s/c)))
         mzero))))
 
-((=== #(0) 5) '(() . 1))
+((=== (var 0) 5) '(() . 1))
 ; ((#(0) . 5))
 
-((=== '(#(0) 2 3) '(1 #(1) 3)) '(() . 2))
+((=== `(,(var 0) 2 3) `(1 ,(var 1) 3)) '(() . 2))
 ; ((#(0) . 1) (#(1) . 2))
 
-go back to definition
-
-# `appendo`
-
-(run* (l)
-  (appendo '(1 2 3) '(4 5 6) l))
-; ((1 2 3 4 5 6))
-
-(run* (l)
-  (appendo '(1 2 3) l '(1 2 3 4 5 6)))
-; ((1 2 3 4 5 6))
-
-(run* (l)
-  (appendo '(1 2 3) l '(1 2 4 5 6)))
+((=== (var 0) 6) `((,(var 0) . 5) . 1))
 ; ()
 
-(run* (l)
-  (fresh (x y)
-    (appendo x y '(1 2 3))
-    (=== l `(x y))))
-; ((() (1 2 3))
-;  ((1) (2 3))
-;  ((1 2) (3))
-;  ((1 2 3) ()))
+(define (unify u v s)
+  (let ((u (*walk* u s))
+        (v (*walk* v s)))
+    (cond
+     ((and (var? u) (var? v) (var=? u v)) s)
+     ((var? u) (ext-s u v s))
+     ((var? v) (ext-s v u s))
+     ((and (pair? u) (pair? v))
+      (let ((s (unify (car u) (car v) s)))
+        (and s (unify (cdr u) (cdr v) s))))
+     (else (and (eqv? u v) s)))))
+
+walk
+
+back to unify, similar to walk (with example)
+(left-right or top-bottom split)
+
+((unify `(,(var 0) 2 3) `(1 ,(var 1) 3)) '())
+
+to relax: cat content. (looong, grumpy?, ...)
+
+((=== `(,(var 0) 2 3) `(1 ,(var 1) 3)) '(() . 2))
+; ((((#(0) . 1) (#(1) . 2)) . 2))
+
+(run* (q)
+  (disj
+    (=== q 5)
+    (=== q 6)))
+
+(define (disj g1 g2)
+  (lambda (s/c)
+    (*mplus* (g1 s/c) (g2 s/c))))
+
+(define (mplus $1 $2)
+  (cond
+   ((null? $1) $2)
+   (else (cons (car $1)
+               (mplus (cdr $1) $2)))))
+
+g1 g2 => (5) (6)
+mplus => ((5) (6))
+
+(run* (q)
+  (conj
+    (=== q 5)
+    (=== q 6)))
+
+(define (conj g1 g2)
+  (lambda (s/c)
+    (*bind* (g1 s/c) g2)))
+
+(define (bind $ g)
+  (cond
+   ((null? $) mzero)
+   (else (mplus
+           (g (car $))
+           (bind (cdr $) g)))))
+
+(bind (5) g2)
+
+(define (fives x)
+  (disj
+    (=== x 5)
+    (fives x)))
+; ... (while (not end-of-the-universe) ...)
+
+old def => ... immature streams (functions/delayed goals)
+(define (mplus $1 $2)
+  (cond
+   ((null? $1) $2)
+   *((procedure? $1) (lambda () (mplus ($1) $2)))*
+   (else (cons (car $1) (mplus (cdr $1) $2)))))
+
+η^{-1}-delay (fancy transition!)
+(define (fives x)
+  (disj
+    (=== x 5)
+    (lambda (s/c)
+      (lambda ()
+        ((fives x) s/c)))))
+
+(define (bind $ g)
+  (cond
+   ((null? $) mzero)
+   *((procedure? $) (lambda () (bind ($) g)))*
+   (else (mplus (g (car $)) (bind (cdr $) g)))))
+
+(define (sixes x) ...) ; (6 6 6 ...)
+(run* (x)
+  (disj (fives x) (sixes x)))
+; only fives
+
+interleaving! (also requires a fancy transition!) (!!!)
+(define (mplus $1 $2)
+  (cond
+   ((null? $1) $2)
+   ((procedure? $1) (lambda () *(mplus $2 ($1))*))
+   (else (cons (car $1) (mplus (cdr $1) $2)))))
+
+(run* (x)
+  (disj (fives x) (sixes x)))
+; fives and sixes!
+
+; trace fives and sixes
+(5 is 6 is)
+
+# Limitations
+
+# Conclusion
 
 # Bonus
 
 (define + -)
-; have fun!
+; have fun! any question?
+
+untyped lambda calculus!
