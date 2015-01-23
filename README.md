@@ -16,7 +16,6 @@
     - logic + numbers = undecidable. why?
     - `exist` vs `fresh`
 
-
 ## Resources
 
 * [mukanren.scm](./mukanren.scm)
