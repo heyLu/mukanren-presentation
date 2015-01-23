@@ -1,5 +1,22 @@
 # A presentation about µKanren
 
+## miniKanren
+
+* design
+    - emphasis on *pure relations* and *finite failure* (thesis, p. 7)
+    - differences from other logic programming languages
+        * "complete (interleaving) search strategy" (compared to Prolog)
+        * "full unification" (compared to Mercury, where functions are
+            specialized depending on input and output arguments, which
+            are annotated as such, disallowing functions with only
+            "output" arguments)
+        * avoidance of Curry's residuation (suspending certain operations
+            until they can operate on non-ground values)
+- questions
+    - logic + numbers = undecidable. why?
+    - `exist` vs `fresh`
+
+
 ## Resources
 
 * [mukanren.scm](./mukanren.scm)
