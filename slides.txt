@@ -1,0 +1,116 @@
+# Scheme
+
+(+ 1 2)
+; 3
+
+(+ 1 (* 3 4))
+; 13
+
+(append '(1 2 3) '(4 5 6))
+; (1 2 3 4 5 6)
+
+; maybe
+(define (append l r)
+  (cond
+    ((null? l) r)
+    (else (cons (car l) (append (cdr l) r)))))
+
+# Examples
+
+(run* (q)
+  (=== q 5))
+; (5)
+
+; (=== q q) (?)
+
+(run* (q)
+  (disj
+    (=== q 5)
+    (=== q 6)))
+; (5 6)
+
+(run* (q)
+  (conj
+    (=== q 5)
+    (=== q 6)))
+; ()
+
+; (fresh ...)
+
+(run* (q)
+  (fresh (y)
+    (conj
+      (=== q `(5 ,y))
+      (disj
+        (=== y 6)
+        (=== y 7)))))
+; ((5 6) (5 7))
+
+(run* (x)
+  (=== x 5))
+; (5)
+
+# Concepts
+
+(=== #(0) 5)
+; <goal> (a function of one argument)
+
+((=== #(0) 5) '(() . 1))
+; ((#(0) . 5)) (a stream, e.g. a list of substitutions)
+
+state:
+(((#(0) . 5) (#(1) . #(0)) (#(2) . (1 2 3))) . 3)
+;^ substitution                                ^ counter
+
+substitution: mapping of variables to values (or other variables)
+(use example above)
+
+# Implementation
+
+(run* (x)
+  (=== x 5))
+
+(=== #(0) 5)
+
+(define (=== x y)
+  (lambda (*s/c*)
+    (let ((s (*unify* u v (car s/c))))
+      (if s
+        (unit `(,s . ,(cdr s/c)))
+        mzero))))
+
+((=== #(0) 5) '(() . 1))
+; ((#(0) . 5))
+
+((=== '(#(0) 2 3) '(1 #(1) 3)) '(() . 2))
+; ((#(0) . 1) (#(1) . 2))
+
+go back to definition
+
+# `appendo`
+
+(run* (l)
+  (appendo '(1 2 3) '(4 5 6) l))
+; ((1 2 3 4 5 6))
+
+(run* (l)
+  (appendo '(1 2 3) l '(1 2 3 4 5 6)))
+; ((1 2 3 4 5 6))
+
+(run* (l)
+  (appendo '(1 2 3) l '(1 2 4 5 6)))
+; ()
+
+(run* (l)
+  (fresh (x y)
+    (appendo x y '(1 2 3))
+    (=== l `(x y))))
+; ((() (1 2 3))
+;  ((1) (2 3))
+;  ((1 2) (3))
+;  ((1 2 3) ()))
+
+# Bonus
+
+(define + -)
+; have fun!
