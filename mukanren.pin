@@ -1,6 +1,6 @@
 # this is a pinpoint presentation, see https://wiki.gnome.org/Apps/Pinpoint for details
 
-[white] [shading-opacity=0.0] [text-color=black] [font=Monospace 75px]
+[white] [shading-opacity=0.0] [text-color=black] [font=Monospace 50px]
 [transition=none]
 
 -- [font=Sans 25px] [text-align=center]
@@ -55,7 +55,7 @@ Scheme
 
 -- [font=Sans 100px]
 
-Examples
+Beispiele
 
 -- [text-color=#aaaaaa]
 
@@ -234,7 +234,7 @@ substitution: mapping of variables to values (or other variables)
 
 -- [font=Sans 100px]
 
-Implementation
+Implementierung
 
 --
 
@@ -615,21 +615,30 @@ to relax: cat content. (looong, grumpy?, ...)
 
 -- [font=Sans 100px]
 
-Limitations
+Grenzen
+
+<span font='50px'>• Negation (<span font='Monospace'>=/=</span> in cKanren)
+• Zahlen (miniKanren, cKanren)
+• "Interface" (<span font='Monospace'>run*</span> und andere mit Macros)
+• Performance (u.a. Tabling in miniKanren)</span>
 
 -- [font=Sans 100px]
 
-Conclusion
+Zusammenfassung
 
--- [font=Sans 100px]
-
-Bonus
+<span font='50px'>• Eleganz
+• Erweiterbarkeit (cKanren, αKanren, rKanren)
+• Einbettung in anderen Sprachen (> 20)
+• relationale Programmierung</span>
 
 --
 
 (define + -)
-; have fun! any question?
+; have fun!               
 
 --
 
-untyped lambda calculus!
+(define + -)
+; have fun! any questions?
+
+--
